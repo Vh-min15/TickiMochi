@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TickiMochi | Tu entrada al mejor sonido</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <!-- Google Sign-In -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --neon-red: #FF2D55;
@@ -88,7 +86,7 @@
         ::-webkit-scrollbar-track { background: #0A0F1C; }
         ::-webkit-scrollbar-thumb { background: #1F2937; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--neon-red); }
-        
+
         #splash {
             animation: fadeOut 1s ease forwards;
             animation-delay: 2s;
@@ -105,18 +103,72 @@
             overflow: hidden;
         }
 
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 2;
-            cursor: pointer;
+        /* Dropdown del usuario */
+        .user-dropdown {
+            position: relative;
+            display: inline-block;
         }
 
-        .user-avatar {
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: var(--dark-card);
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            padding: 12px 16px;
+            z-index: 1;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            top: 70px;
+        }
+
+        .dropdown-content a {
+            color: white;
+            padding: 12px 0;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            font-size: 14px;
+        }
+
+        .dropdown-content a:hover {
+            color: var(--neon-red);
+        }
+
+        .dropdown-content a:not(:last-child) {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-dropdown.active .dropdown-content {
+            display: block;
+        }
+
+        .user-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 50px;
+            transition: background-color 0.3s ease;
+        }
+
+        .user-profile-btn:hover {
+            background-color: rgba(255, 45, 85, 0.1);
+        }
+
+        .user-profile-btn img {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             object-fit: cover;
+        }
+
+        .user-profile-btn span {
+            font-size: 14px;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -132,10 +184,8 @@
     <div class="bg-[#1F2937] p-10 rounded-[30px] border border-white/10 shadow-2xl w-[350px] text-center">
         <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjDWdbCn4v1g5HM9irFbXMB-MRPhG0Kx4cRQjf1tdqZirp8hLQAWajka7vJkAhm8pOXLW04O-txJQwfcF7l_OLiDhd3ZGHKglr1c4M3oJfUE6gVRDpVakRCEpenWW-WMdlzUku0GDK4fzaGbnYfCV_BOSj8XQ0zOrdDZ5PnERYv0pmE6XAQdJ2YIGZIEbOv/s320/upscalemedia-transformed%20-%202026-05-05T143843.230.png" 
         class="w-20 mx-auto mb-6">
-
         <h2 class="text-2xl font-extrabold mb-2">Bienvenido</h2>
         <p class="text-gray-400 text-sm mb-8">Inicia sesión para continuar</p>
-
         <div id="google-signin-button"></div>
     </div>
 </div>
@@ -152,14 +202,21 @@
                 <a href="#" class="hover:text-[#FF2D55] transition">Entradas</a>
                 <a href="#" class="hover:text-[#FF2D55] transition">Perfil</a>
             </div>
-            <div id="nav-user-section" class="hidden items-center gap-4">
-                <div class="user-profile" onclick="toggleUserMenu()">
-                    <img id="user-avatar-nav" class="user-avatar" alt="Avatar">
-                    <span id="user-name-nav" class="text-sm font-semibold"></span>
+            <div id="auth-container" class="flex items-center gap-4">
+                <button id="connect-btn" class="btn-primary px-6 py-2 text-sm font-bold">CONECTAR</button>
+                <div id="user-menu" class="user-dropdown hidden">
+                    <div class="user-profile-btn" onclick="toggleDropdown()">
+                        <img id="user-avatar" src="" alt="Usuario">
+                        <span id="user-name"></span>
+                        <span>▼</span>
+                    </div>
+                    <div class="dropdown-content">
+                        <a onclick="showSection('home')">Mi Perfil</a>
+                        <a onclick="showSection('home')">Mis Entradas</a>
+                        <a onclick="logoutUser()">Cerrar Sesión</a>
+                    </div>
                 </div>
-                <button onclick="logout()" class="btn-primary px-4 py-2 text-sm font-bold">LOGOUT</button>
             </div>
-            <button id="nav-login-btn" class="btn-primary px-6 py-2 text-sm font-bold" onclick="showLoginScreen()">CONECTAR</button>
         </div>
     </nav>
 
@@ -326,7 +383,7 @@
         <section id="success" class="max-w-7xl mx-auto px-6 py-12 hidden-section text-center">
             <div class="max-w-md mx-auto bg-gradient-to-b from-[#1F2937] to-black p-10 rounded-[40px] border border-white/10">
                 <div class="mb-8">
-                    <div class="qr-container" id="qrcode"></div>
+                    <img id="qr-image" src="" alt="QR" class="w-48 h-48 mx-auto">
                 </div>
                 <h2 class="text-2xl font-bold mb-4">¡Tu compra ha sido confirmada!</h2>
                 <p class="text-gray-400 mb-8">Hemos enviado los detalles a tu correo electrónico registrado.</p>
@@ -359,7 +416,8 @@
 
     <script>
         let currentUser = null;
-        
+        const CLIENT_ID = '273683489958-p21rpstbfqr5ct8lirpjlnq4dee459vq.apps.googleusercontent.com';
+
         // --- Mock Data ---
         const eventsData = [
             { id: 1, name: "Reggaeton Lima Festival", date: "Sábado 28 de Marzo", venue: "Estadio Nacional", img: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=2070", price: 150 },
@@ -375,17 +433,17 @@
         let cart = { platinum: 0, vip: 0, general: 0, occidente: 0, tribunaNorte: 0 };
         const prices = { platinum: 5, vip: 3.5, general: 2.5, occidente: 3, tribunaNorte: 2 };
 
-        // --- Google Sign-In ---
+        // --- Google Sign-In Setup ---
         function initializeGoogleSignIn() {
             google.accounts.id.initialize({
-                client_id: '273683489958-p21rpstbfqr5ct8lirpjlnq4dee459vq.apps.googleusercontent.com',
+                client_id: CLIENT_ID,
                 callback: handleCredentialResponse
             });
 
             google.accounts.id.renderButton(
                 document.getElementById('google-signin-button'),
                 { 
-                    theme: 'filled_black',
+                    theme: 'dark',
                     size: 'large',
                     width: '100%'
                 }
@@ -393,7 +451,6 @@
         }
 
         function handleCredentialResponse(response) {
-            // Decodificar el JWT
             const base64Url = response.credential.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
             const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
@@ -401,60 +458,71 @@
             }).join(''));
 
             const userData = JSON.parse(jsonPayload);
-            currentUser = userData;
+            currentUser = {
+                email: userData.email,
+                name: userData.name,
+                picture: userData.picture
+            };
 
-            // Guardar en localStorage
-            localStorage.setItem('tickimochi_user', JSON.stringify(userData));
-
-            // Ocultar login y mostrar home
+            localStorage.setItem('tickimochi_user', JSON.stringify(currentUser));
+            updateUserUI();
             document.getElementById('loginScreen').classList.add('hidden');
-            updateNavigation();
-            showSection('home');
         }
 
-        function showLoginScreen() {
-            if (!currentUser) {
-                document.getElementById('loginScreen').classList.remove('hidden');
-            }
-        }
-
-        function updateNavigation() {
-            const navLoginBtn = document.getElementById('nav-login-btn');
-            const navUserSection = document.getElementById('nav-user-section');
-
+        function updateUserUI() {
             if (currentUser) {
-                navLoginBtn.classList.add('hidden');
-                navUserSection.classList.remove('hidden');
-                document.getElementById('user-avatar-nav').src = currentUser.picture;
-                document.getElementById('user-name-nav').innerText = currentUser.name;
+                document.getElementById('connect-btn').classList.add('hidden');
+                document.getElementById('user-menu').classList.remove('hidden');
+                document.getElementById('user-avatar').src = currentUser.picture;
+                document.getElementById('user-name').textContent = currentUser.name.split(' ')[0];
             } else {
-                navLoginBtn.classList.remove('hidden');
-                navUserSection.classList.add('hidden');
+                document.getElementById('connect-btn').classList.remove('hidden');
+                document.getElementById('user-menu').classList.add('hidden');
             }
         }
 
-        function logout() {
+        function toggleDropdown() {
+            document.getElementById('user-menu').classList.toggle('active');
+        }
+
+        function logoutUser() {
             currentUser = null;
             localStorage.removeItem('tickimochi_user');
-            google.accounts.id.disableAutoSelect();
-            updateNavigation();
-            showLoginScreen();
+            updateUserUI();
+            showSection('home');
+            document.getElementById('user-menu').classList.remove('active');
         }
 
-        function toggleUserMenu() {
-            console.log('Perfil:', currentUser);
-        }
+        // Cerrar dropdown al clickear fuera
+        document.addEventListener('click', function(event) {
+            const userMenu = document.getElementById('user-menu');
+            if (!event.target.closest('.user-dropdown')) {
+                userMenu.classList.remove('active');
+            }
+        });
 
         // --- Navigation ---
         function showSection(sectionId) {
-            if (!currentUser && sectionId !== 'home') {
-                showLoginScreen();
+            if (!currentUser && sectionId !== 'home' && sectionId !== 'events' && sectionId !== 'detail') {
+                alert('Debes iniciar sesión para acceder a esta sección');
                 return;
             }
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden-section'));
             const target = document.getElementById(sectionId);
             target.classList.remove('hidden-section');
             window.scrollTo(0, 0);
+        }
+
+        // --- NUEVA FUNCIÓN: Ir directo a tickets desde el Hero ---
+        function buyFeaturedTicket(id) {
+            if (!currentUser) {
+                document.getElementById('loginScreen').classList.remove('hidden');
+                return;
+            }
+            currentEvent = eventsData.find(e => e.id === id);
+            if (currentEvent) {
+                goToTickets();
+            }
         }
 
         // --- Rendering ---
@@ -483,17 +551,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        function buyFeaturedTicket(id) {
-            if (!currentUser) {
-                showLoginScreen();
-                return;
-            }
-            currentEvent = eventsData.find(e => e.id === id);
-            if (currentEvent) {
-                goToTickets();
-            }
         }
 
         function viewDetail(id) {
@@ -539,6 +596,10 @@
 
         // --- Cart Logic ---
         function goToTickets() {
+            if (!currentUser) {
+                document.getElementById('loginScreen').classList.remove('hidden');
+                return;
+            }
             document.getElementById('ticket-event-name').innerText = currentEvent.name;
             resetCart();
             showSection('tickets');
@@ -595,7 +656,7 @@
             setTimeout(() => {
                 const isSuccess = Math.random() < 0.8;
                 if (isSuccess) {
-                    generateQR();
+                    document.getElementById('qr-image').src = 'https://lh3.googleusercontent.com/d/1nVZZw3JqBKyHWYYatrgaWIvNMoOzpPJX=w220';
                     document.getElementById('success-event-info').innerText = `${currentEvent.name} - ${currentEvent.date}`;
                     showSection('success');
                     
@@ -611,30 +672,13 @@
             }, 3000);
         }
 
-        function generateQR() {
-            const qrElement = document.getElementById("qrcode");
-            qrElement.innerHTML = "";
-            const ticketData = `TICKET-${Math.random().toString(36).substr(2, 9)}-${currentEvent.id}`;
-            new QRCode(qrElement, {
-                text: ticketData,
-                width: 180,
-                height: 180,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-        }
-
         function openSurvey() {
-            const email = currentUser?.email;
-
-            if (!email) {
+            if (!currentUser) {
                 alert("Debes iniciar sesión primero");
                 return;
             }
 
             const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSdbT4Q5FvtCqOYUZCKknCnr1t1RJTyOiPUusaDfQSo9Z9mtpg/viewform?usp=header";
-
             window.open(formURL, "_blank");
         }
 
@@ -643,25 +687,21 @@
 
         window.onload = () => {
             renderGrids();
+            initializeGoogleSignIn();
 
             // Verificar si hay usuario guardado
             const savedUser = localStorage.getItem('tickimochi_user');
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
-                updateNavigation();
+                updateUserUI();
             }
 
             setTimeout(() => {
                 document.getElementById('splash').remove();
 
-                // Inicializar Google Sign-In
-                initializeGoogleSignIn();
-
-                // Si no hay usuario, mostrar login
+                // Mostrar login solo si no hay usuario
                 if (!currentUser) {
                     document.getElementById('loginScreen').classList.remove('hidden');
-                } else {
-                    showSection('home');
                 }
 
                 document.body.classList.remove('loading');
