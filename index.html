@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TickiMochi | Tu entrada al mejor sonido</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -86,7 +87,7 @@
         ::-webkit-scrollbar-track { background: #0A0F1C; }
         ::-webkit-scrollbar-thumb { background: #1F2937; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--neon-red); }
-
+        
         #splash {
             animation: fadeOut 1s ease forwards;
             animation-delay: 2s;
@@ -103,72 +104,72 @@
             overflow: hidden;
         }
 
-        /* Dropdown del usuario */
+        /* Dropdown usuario */
         .user-dropdown {
             position: relative;
-            display: inline-block;
         }
 
-        .dropdown-content {
-            display: none;
+        .user-dropdown-menu {
             position: absolute;
+            top: 100%;
             right: 0;
-            background-color: var(--dark-card);
-            min-width: 200px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            padding: 12px 16px;
-            z-index: 1;
-            border-radius: 15px;
+            background: var(--dark-card);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            top: 70px;
+            border-radius: 15px;
+            min-width: 200px;
+            margin-top: 10px;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
-        .dropdown-content a {
-            color: white;
-            padding: 12px 0;
-            text-decoration: none;
+        .user-dropdown-menu a, .user-dropdown-menu button {
             display: block;
+            width: 100%;
+            padding: 12px 16px;
+            text-align: left;
+            border: none;
+            background: none;
+            color: white;
             cursor: pointer;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 14px;
         }
 
-        .dropdown-content a:hover {
+        .user-dropdown-menu a:last-child, .user-dropdown-menu button:last-child {
+            border-bottom: none;
+        }
+
+        .user-dropdown-menu a:hover, .user-dropdown-menu button:hover {
+            background: rgba(255, 45, 85, 0.1);
             color: var(--neon-red);
         }
 
-        .dropdown-content a:not(:last-child) {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        /* Animación del botón evaluar */
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 4px 15px rgba(255, 45, 85, 0.3);
+            }
+            50% {
+                box-shadow: 0 4px 25px rgba(255, 45, 85, 0.6);
+            }
         }
 
-        .user-dropdown.active .dropdown-content {
-            display: block;
+        .btn-survey {
+            animation: pulse 2s infinite;
         }
 
-        .user-profile-btn {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 50px;
-            transition: background-color 0.3s ease;
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
         }
 
-        .user-profile-btn:hover {
-            background-color: rgba(255, 45, 85, 0.1);
-        }
-
-        .user-profile-btn img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .user-profile-btn span {
-            font-size: 14px;
-            font-weight: 600;
+        @media (max-width: 640px) {
+            .hero-title {
+                font-size: 1.875rem;
+            }
         }
     </style>
 </head>
@@ -180,13 +181,15 @@
 </div>
 
 <!-- Login Screen -->
-<div id="loginScreen" class="fixed inset-0 z-[9998] flex items-center justify-center bg-[#0A0F1C]/95 backdrop-blur-md hidden">
-    <div class="bg-[#1F2937] p-10 rounded-[30px] border border-white/10 shadow-2xl w-[350px] text-center">
+<div id="loginScreen" class="fixed inset-0 z-[9998] flex items-center justify-center bg-[#0A0F1C]/95 backdrop-blur-md hidden p-4">
+    <div class="bg-[#1F2937] p-8 md:p-10 rounded-[30px] border border-white/10 shadow-2xl w-full max-w-[350px] text-center">
         <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjDWdbCn4v1g5HM9irFbXMB-MRPhG0Kx4cRQjf1tdqZirp8hLQAWajka7vJkAhm8pOXLW04O-txJQwfcF7l_OLiDhd3ZGHKglr1c4M3oJfUE6gVRDpVakRCEpenWW-WMdlzUku0GDK4fzaGbnYfCV_BOSj8XQ0zOrdDZ5PnERYv0pmE6XAQdJ2YIGZIEbOv/s320/upscalemedia-transformed%20-%202026-05-05T143843.230.png" 
         class="w-20 mx-auto mb-6">
+
         <h2 class="text-2xl font-extrabold mb-2">Bienvenido</h2>
         <p class="text-gray-400 text-sm mb-8">Inicia sesión para continuar</p>
-        <div id="google-signin-button"></div>
+
+        <div id="googleButton" class="flex justify-center"></div>
     </div>
 </div>
 
@@ -202,18 +205,21 @@
                 <a href="#" class="hover:text-[#FF2D55] transition">Entradas</a>
                 <a href="#" class="hover:text-[#FF2D55] transition">Perfil</a>
             </div>
-            <div id="auth-container" class="flex items-center gap-4">
-                <button id="connect-btn" class="btn-primary px-6 py-2 text-sm font-bold">CONECTAR</button>
-                <div id="user-menu" class="user-dropdown hidden">
-                    <div class="user-profile-btn" onclick="toggleDropdown()">
-                        <img id="user-avatar" src="" alt="Usuario">
-                        <span id="user-name"></span>
-                        <span>▼</span>
-                    </div>
-                    <div class="dropdown-content">
-                        <a onclick="showSection('home')">Mi Perfil</a>
-                        <a onclick="showSection('home')">Mis Entradas</a>
-                        <a onclick="logoutUser()">Cerrar Sesión</a>
+            
+            <div id="authSection" class="flex items-center gap-4">
+                <button id="connectBtn" class="btn-primary px-6 py-2 text-sm font-bold">CONECTAR</button>
+                <div id="userSection" class="user-dropdown hidden">
+                    <button id="userButton" class="flex items-center gap-3 hover:opacity-80 transition">
+                        <img id="userAvatar" src="" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-[#FF2D55]">
+                        <div class="text-left hidden md:block">
+                            <p id="userName" class="text-sm font-bold"></p>
+                            <p id="userEmail" class="text-xs text-gray-400"></p>
+                        </div>
+                    </button>
+                    <div id="userMenu" class="user-dropdown-menu hidden">
+                        <a href="#" onclick="showSection('home'); closeUserMenu()">Mi Perfil</a>
+                        <a href="#" onclick="showSection('home'); closeUserMenu()">Mis Entradas</a>
+                        <button onclick="logoutUser()">Cerrar Sesión</button>
                     </div>
                 </div>
             </div>
@@ -222,13 +228,13 @@
 
     <main class="pt-20">
         
-        <section id="home" class="max-w-7xl mx-auto px-6 py-12">
+        <section id="home" class="max-w-7xl mx-auto px-4 md:px-6 py-12">
             <div class="relative h-[500px] rounded-[40px] overflow-hidden mb-16">
                 <img src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&q=80&w=2070" class="w-full h-full object-cover brightness-50" alt="Hero Image">
-                <div class="absolute inset-0 flex flex-col justify-center px-12 bg-gradient-to-r from-black/80 to-transparent">
-                    <h1 class="text-6xl font-black mb-1 leading-tight">Reggaeton Lima Festival</h1>
-                    <span class="text-[#FF2D55] text-4xl font-extrabold mb-4">Sábado 28 de marzo, 20.00</span>
-                    <p class="text-gray-300 text-xl max-w-lg mb-8">Estadio Nacional del Perú, Lima</p>
+                <div class="absolute inset-0 flex flex-col justify-center px-6 md:px-12 bg-gradient-to-r from-black/80 to-transparent">
+                    <h1 class="hero-title text-4xl md:text-6xl font-black mb-1 leading-tight">Reggaeton Lima Festival</h1>
+                    <span class="text-[#FF2D55] text-2xl md:text-4xl font-extrabold mb-4">Sábado 28 de marzo, 20.00</span>
+                    <p class="text-gray-300 text-lg md:text-xl max-w-lg mb-8">Estadio Nacional del Perú, Lima</p>
                     <button onclick="buyFeaturedTicket(1)" class="btn-primary w-fit px-10 py-4 text-lg font-bold">Comprar ticket</button>
                 </div>
             </div>
@@ -351,7 +357,7 @@
                         <label class="flex items-center justify-between p-5 bg-white/5 border border-white/10 rounded-2xl cursor-pointer hover:border-[#FF2D55]/50 transition">
                             <div class="flex items-center gap-4">
                                 <div class="w-12 h-8 bg-purple-600 rounded flex items-center justify-center font-bold text-[10px]">YAPE</div>
-                                <span class="font-bold">977859023</span>
+                                <span class="font-bold">953046156</span>
                             </div>
                             <input type="radio" name="pay" class="accent-[#FF2D55]">
                         </label>
@@ -382,21 +388,22 @@
 
         <section id="success" class="max-w-7xl mx-auto px-6 py-12 hidden-section text-center">
             <div class="max-w-md mx-auto bg-gradient-to-b from-[#1F2937] to-black p-10 rounded-[40px] border border-white/10">
-                <div class="mb-8">
-                    <img id="qr-image" src="" alt="QR" class="w-48 h-48 mx-auto">
+                <div class="mb-6">
+                    <div class="qr-container flex justify-center" id="qrcode">
+                        <img src="https://lh3.googleusercontent.com/d/1nVZZw3JqBKyHWYYatrgaWIvNMoOzpPJX=w200" alt="QR Code" class="w-40 h-40 object-contain">
+                    </div>
                 </div>
                 <h2 class="text-2xl font-bold mb-4">¡Tu compra ha sido confirmada!</h2>
-                <p class="text-gray-400 mb-8">Hemos enviado los detalles a tu correo electrónico registrado.</p>
+                <p class="text-gray-400 mb-6">Hemos enviado los detalles a tu correo electrónico registrado.</p>
                 <div class="text-left bg-white/5 p-4 rounded-2xl mb-8">
                     <p class="text-xs text-gray-500">Ticket ID: #TM-882910</p>
                     <p id="success-event-info" class="font-bold text-[#FF2D55]"></p>
                 </div>
-                <button onclick="showSection('home')" class="w-full py-4 rounded-full border border-white/20 hover:bg-white hover:text-black transition font-bold">Ver mis entradas</button>
-                <button onclick="openSurvey()" class="btn-primary w-full py-3 mt-4 text-sm">
-    Evaluar experiencia
-</button>
+                <button onclick="showSection('home')" class="w-full py-4 rounded-full border border-white/20 hover:bg-white hover:text-black transition font-bold mb-4">Ver mis entradas</button>
+                <button onclick="openSurvey()" class="btn-primary btn-survey w-full py-4 text-sm font-bold text-white">
+                    ⭐ Evaluar experiencia
+                </button>
             </div>
-            
         </section>
 
         <section id="error" class="max-w-7xl mx-auto px-6 py-12 hidden-section text-center">
@@ -433,17 +440,26 @@
         let cart = { platinum: 0, vip: 0, general: 0, occidente: 0, tribunaNorte: 0 };
         const prices = { platinum: 5, vip: 3.5, general: 2.5, occidente: 3, tribunaNorte: 2 };
 
-        // --- Google Sign-In Setup ---
-        function initializeGoogleSignIn() {
+        // --- Navigation ---
+        function showSection(sectionId) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden-section'));
+            const target = document.getElementById(sectionId);
+            target.classList.remove('hidden-section');
+            window.scrollTo(0, 0);
+        }
+
+        // --- Google Sign-In ---
+        function initializeGoogle() {
             google.accounts.id.initialize({
                 client_id: CLIENT_ID,
-                callback: handleCredentialResponse
+                callback: handleCredentialResponse,
+                auto_select: false
             });
 
             google.accounts.id.renderButton(
-                document.getElementById('google-signin-button'),
+                document.getElementById('googleButton'),
                 { 
-                    theme: 'dark',
+                    theme: 'dark', 
                     size: 'large',
                     width: '100%'
                 }
@@ -451,38 +467,41 @@
         }
 
         function handleCredentialResponse(response) {
-            const base64Url = response.credential.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-
-            const userData = JSON.parse(jsonPayload);
+            const token = response.credential;
+            const decodedToken = jwt_decode(token);
+            
             currentUser = {
-                email: userData.email,
-                name: userData.name,
-                picture: userData.picture
+                email: decodedToken.email,
+                name: decodedToken.name,
+                picture: decodedToken.picture
             };
 
             localStorage.setItem('tickimochi_user', JSON.stringify(currentUser));
-            updateUserUI();
+            
             document.getElementById('loginScreen').classList.add('hidden');
+            updateUserUI();
         }
 
         function updateUserUI() {
             if (currentUser) {
-                document.getElementById('connect-btn').classList.add('hidden');
-                document.getElementById('user-menu').classList.remove('hidden');
-                document.getElementById('user-avatar').src = currentUser.picture;
-                document.getElementById('user-name').textContent = currentUser.name.split(' ')[0];
+                document.getElementById('connectBtn').classList.add('hidden');
+                document.getElementById('userSection').classList.remove('hidden');
+                document.getElementById('userAvatar').src = currentUser.picture;
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userEmail').textContent = currentUser.email;
             } else {
-                document.getElementById('connect-btn').classList.remove('hidden');
-                document.getElementById('user-menu').classList.add('hidden');
+                document.getElementById('connectBtn').classList.remove('hidden');
+                document.getElementById('userSection').classList.add('hidden');
             }
         }
 
-        function toggleDropdown() {
-            document.getElementById('user-menu').classList.toggle('active');
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function closeUserMenu() {
+            document.getElementById('userMenu').classList.add('hidden');
         }
 
         function logoutUser() {
@@ -490,32 +509,21 @@
             localStorage.removeItem('tickimochi_user');
             updateUserUI();
             showSection('home');
-            document.getElementById('user-menu').classList.remove('active');
+            closeUserMenu();
         }
 
-        // Cerrar dropdown al clickear fuera
-        document.addEventListener('click', function(event) {
-            const userMenu = document.getElementById('user-menu');
-            if (!event.target.closest('.user-dropdown')) {
-                userMenu.classList.remove('active');
-            }
-        });
-
-        // --- Navigation ---
-        function showSection(sectionId) {
-            if (!currentUser && sectionId !== 'home' && sectionId !== 'events' && sectionId !== 'detail') {
-                alert('Debes iniciar sesión para acceder a esta sección');
-                return;
-            }
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden-section'));
-            const target = document.getElementById(sectionId);
-            target.classList.remove('hidden-section');
-            window.scrollTo(0, 0);
+        // JWT Decode
+        function jwt_decode(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+            return JSON.parse(jsonPayload);
         }
 
         // --- NUEVA FUNCIÓN: Ir directo a tickets desde el Hero ---
         function buyFeaturedTicket(id) {
             if (!currentUser) {
+                alert('Por favor inicia sesión primero');
                 document.getElementById('loginScreen').classList.remove('hidden');
                 return;
             }
@@ -597,6 +605,7 @@
         // --- Cart Logic ---
         function goToTickets() {
             if (!currentUser) {
+                alert('Por favor inicia sesión primero');
                 document.getElementById('loginScreen').classList.remove('hidden');
                 return;
             }
@@ -656,7 +665,6 @@
             setTimeout(() => {
                 const isSuccess = Math.random() < 0.8;
                 if (isSuccess) {
-                    document.getElementById('qr-image').src = 'https://lh3.googleusercontent.com/d/1nVZZw3JqBKyHWYYatrgaWIvNMoOzpPJX=w220';
                     document.getElementById('success-event-info').innerText = `${currentEvent.name} - ${currentEvent.date}`;
                     showSection('success');
                     
@@ -682,30 +690,50 @@
             window.open(formURL, "_blank");
         }
 
+        // Click fuera del dropdown
+        document.addEventListener('click', (e) => {
+            const userSection = document.getElementById('userSection');
+            const userButton = document.getElementById('userButton');
+            if (userSection && !userSection.contains(e.target)) {
+                closeUserMenu();
+            }
+        });
+
+        // User button click
+        document.addEventListener('DOMContentLoaded', () => {
+            const userButton = document.getElementById('userButton');
+            if (userButton) {
+                userButton.addEventListener('click', toggleUserMenu);
+            }
+        });
+
         // --- Init ---
         document.body.classList.add('loading');
 
         window.onload = () => {
-            renderGrids();
-            initializeGoogleSignIn();
-
-            // Verificar si hay usuario guardado
+            // Cargar usuario si existe
             const savedUser = localStorage.getItem('tickimochi_user');
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
-                updateUserUI();
             }
+
+            renderGrids();
+            initializeGoogle();
 
             setTimeout(() => {
                 document.getElementById('splash').remove();
 
-                // Mostrar login solo si no hay usuario
                 if (!currentUser) {
                     document.getElementById('loginScreen').classList.remove('hidden');
                 }
 
+                updateUserUI();
                 document.body.classList.remove('loading');
             }, 2200);
+
+            document.getElementById('connectBtn').addEventListener('click', () => {
+                document.getElementById('loginScreen').classList.remove('hidden');
+            });
         };
     </script>
 </body>
