@@ -43,6 +43,7 @@
             overflow: hidden;
             transition: transform 0.3s ease;
             border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
         }
 
         .event-card:hover {
@@ -208,6 +209,30 @@
             line-height: 1;
         }
 
+        .coming-soon-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            z-index: 10;
+        }
+
+        .coming-soon-badge {
+            background: linear-gradient(135deg, var(--neon-red), #ff6b8a);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 45, 85, 0.4);
+            transform: rotate(-15deg);
+        }
+
         @media (max-width: 640px) {
             .user-info {
                 display: none;
@@ -216,6 +241,11 @@
             .user-container {
                 padding: 8px;
                 gap: 8px;
+            }
+
+            .coming-soon-badge {
+                font-size: 0.85rem;
+                padding: 10px 18px;
             }
         }
     </style>
@@ -481,9 +511,9 @@
             { id: 1, name: "Reggaeton Lima Festival", date: "Sábado 28 de Marzo", venue: "Estadio Nacional", img: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=2070", price: 150 },
             { id: 2, name: "Brightlight Music Fest", date: "Viernes 12 de Junio", venue: "Arena 1", img: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=2070", price: 200 },
             { id: 3, name: "Electronic Paradise", date: "Sábado 05 de Julio", venue: "Club Cultural", img: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=2070", price: 180 },
-            { id: 4, name: "Rock Symphony", date: "Jueves 20 de Agosto", venue: "Gran Teatro Nacional", img: "https://images.unsplash.com/photo-1459749411177-042180ce673c?auto=format&fit=crop&q=80&w=2070", price: 120 },
+            { id: 4, name: "Rock Symphony", date: "Jueves 20 de Agosto", venue: "Gran Teatro Nacional", img: null, price: 120, comingSoon: true },
             { id: 5, name: "K-Pop World Tour", date: "Domingo 15 de Septiembre", venue: "Jockey Club", img: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80&w=2070", price: 350 },
-            { id: 6, name: "Jazz Under the Moon", date: "Viernes 02 de Octubre", venue: "Barranco Arena", img: "https://images.unsplash.com/photo-1514525253344-f814d074e015?auto=format&fit=crop&q=80&w=2070", price: 90 }
+            { id: 6, name: "Jazz Under the Moon", date: "Viernes 02 de Octubre", venue: "Barranco Arena", img: null, price: 90, comingSoon: true }
         ];
 
         // --- State ---
@@ -527,11 +557,19 @@
         }
 
         function createCardHtml(event) {
+            const imgSrc = event.img || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=2070';
+            const comingSoonHtml = event.comingSoon ? `
+                <div class="coming-soon-overlay">
+                    <div class="coming-soon-badge">PRÓXIMAMENTE</div>
+                </div>
+            ` : '';
+            
             return `
                 <div class="event-card group cursor-pointer" onclick="viewDetail(${event.id})">
                     <div class="h-64 overflow-hidden relative">
-                        <img src="${event.img}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt="${event.name}">
+                        <img src="${imgSrc}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" alt="${event.name}">
                         <div class="absolute bottom-4 left-4 bg-[#FF2D55] text-white text-xs font-bold px-3 py-1 rounded-full">DESTACADO</div>
+                        ${comingSoonHtml}
                     </div>
                     <div class="p-6">
                         <p class="text-xs text-[#FF2D55] font-bold mb-1 uppercase tracking-tighter">${event.date}</p>
@@ -552,10 +590,20 @@
             }
             currentEvent = eventsData.find(e => e.id === id);
             const detailSection = document.getElementById('event-detail-content');
+            const imgSrc = currentEvent.img || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=2070';
+            const comingSoonContent = currentEvent.comingSoon ? `
+                <div class="relative">
+                    <img src="${imgSrc}" class="w-full h-full object-cover blur-sm" alt="">
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/40">
+                        <div class="coming-soon-badge text-2xl">PRÓXIMAMENTE</div>
+                    </div>
+                </div>
+            ` : `<img src="${imgSrc}" class="w-full h-full object-cover" alt="">`;
+            
             detailSection.innerHTML = `
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
                     <div class="rounded-[30px] overflow-hidden shadow-2xl">
-                        <img src="${currentEvent.img}" class="w-full h-full object-cover" alt="">
+                        ${comingSoonContent}
                     </div>
                     <div>
                         <span class="text-[#FF2D55] font-bold tracking-widest text-xs md:text-sm uppercase">Concierto confirmado</span>
@@ -581,7 +629,7 @@
                             <p class="text-gray-400 leading-relaxed text-sm md:text-base">Prepárate para una noche inolvidable. El festival más grande llega a la ciudad con los mejores artistas internacionales en una producción de nivel mundial. No te pierdas la preventa exclusiva.</p>
                         </div>
                         <div class="flex flex-col md:flex-row items-center gap-4 md:gap-6">
-                            <button onclick="goToTickets()" class="btn-primary flex-1 py-3 md:py-4 text-base md:text-lg font-bold w-full md:w-auto">COMPRAR ENTRADAS</button>
+                            ${!currentEvent.comingSoon ? `<button onclick="goToTickets()" class="btn-primary flex-1 py-3 md:py-4 text-base md:text-lg font-bold w-full md:w-auto">COMPRAR ENTRADAS</button>` : `<button class="btn-primary flex-1 py-3 md:py-4 text-base md:text-lg font-bold w-full md:w-auto opacity-50 cursor-not-allowed" disabled>PRÓXIMAMENTE</button>`}
                             <button class="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/5 transition">❤️</button>
                         </div>
                     </div>
@@ -688,7 +736,7 @@
         document.addEventListener('click', (e) => {
             const userContainer = document.querySelector('.user-container');
             const dropdown = document.getElementById('dropdown-menu');
-            if (!userContainer.contains(e.target)) {
+            if (userContainer && !userContainer.contains(e.target)) {
                 closeDropdown();
             }
         });
